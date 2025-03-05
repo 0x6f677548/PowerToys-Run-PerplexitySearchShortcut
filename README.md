@@ -14,6 +14,11 @@
 
 A [PowerToys Run](https://aka.ms/PowerToysOverview#powertoys-run) plugin that enables quick searching using [Perplexity AI](https://perplexity.ai/).
 
+## Preview
+
+![Preview of the plugin in action](./.demo/perplexitysearchshortcut-demo1.gif)
+
+
 ## Description
 
 This plugin allows you to quickly search the web using Perplexity AI directly from PowerToys Run. Simply type the activation keyword followed by your search query, and the plugin will open Perplexity AI with your search term.
@@ -37,6 +42,22 @@ ptr add PerplexitySearchShortcut 0x6f677548/PowerToys-Run-PerplexitySearchShortc
 1. Download the latest release from the [Releases page](https://github.com/0x6f677548/PowerToys-Run-PerplexitySearchShortcut/releases)
 2. Extract the archive to `%LOCALAPPDATA%\Microsoft\PowerToys\PowerToys Run\Plugins`
 3. Restart PowerToys Run
+
+### Build and Deploy
+
+If you want to build and deploy the plugin directly from source:
+
+1. Clone this repository
+2. Run the provided PowerShell script:
+
+```powershell
+.\BuildAndDeploy.ps1
+```
+
+This script will:
+- Build the plugin for your platform
+- Copy the built files to the PowerToys Run plugins directory
+- Restart PowerToys to apply changes
 
 ## Usage
 
