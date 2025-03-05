@@ -1,0 +1,15 @@
+{
+  "ID": "5594ADCDFB534049A3060DCFAF3E9B01",
+  "ActionKeyword": ":p",
+  "IsGlobal": true,
+  "Name": "Perplexity Search",
+  "Author": "0x6f677548 (Hugo Batista)",
+  "Version": "0.1.0",
+  "Language": "csharp",
+  "Website": "https://github.com/0x6f677548/PowerToys-Run-PerplexitySearchShortcut",
+  "ExecuteFileName": "Community.PowerToys.Run.Plugin.PerplexitySearchShortcut.dll",
+  "IcoPathLight": "Images\\perplexity.light.png",
+  "IcoPathDark": "Images\\perplexity.dark.png",
+  "IcoPath": "Images\\perplexity.light.png",
+  "Description": "Search Perplexity AI"
+}

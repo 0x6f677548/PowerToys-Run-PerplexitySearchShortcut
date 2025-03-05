@@ -1,0 +1,36 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Community.PowerToys.Run.Plugin.PerplexitySearchShortcut", "Community.PowerToys.Run.Plugin.PerplexitySearchShortcut.csproj", "{5594ADCD-FB53-4049-A306-0DCFAF3E9B01}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ARM64 = Debug|ARM64
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|ARM64 = Release|ARM64
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5594ADCD-FB53-4049-A306-0DCFAF3E9B01}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{5594ADCD-FB53-4049-A306-0DCFAF3E9B01}.Debug|ARM64.Build.0 = Debug|ARM64
+		{5594ADCD-FB53-4049-A306-0DCFAF3E9B01}.Debug|x64.ActiveCfg = Debug|x64
+		{5594ADCD-FB53-4049-A306-0DCFAF3E9B01}.Debug|x64.Build.0 = Debug|x64
+		{5594ADCD-FB53-4049-A306-0DCFAF3E9B01}.Debug|x86.ActiveCfg = Debug|x86
+		{5594ADCD-FB53-4049-A306-0DCFAF3E9B01}.Debug|x86.Build.0 = Debug|x86
+		{5594ADCD-FB53-4049-A306-0DCFAF3E9B01}.Release|ARM64.ActiveCfg = Release|ARM64
+		{5594ADCD-FB53-4049-A306-0DCFAF3E9B01}.Release|ARM64.Build.0 = Release|ARM64
+		{5594ADCD-FB53-4049-A306-0DCFAF3E9B01}.Release|x64.ActiveCfg = Release|x64
+		{5594ADCD-FB53-4049-A306-0DCFAF3E9B01}.Release|x64.Build.0 = Release|x64
+		{5594ADCD-FB53-4049-A306-0DCFAF3E9B01}.Release|x86.ActiveCfg = Release|x86
+		{5594ADCD-FB53-4049-A306-0DCFAF3E9B01}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B5EA87C1-3069-4DD1-B8FF-DAA855FE13E7}
+	EndGlobalSection
+EndGlobal

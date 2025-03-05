@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <ProjectGuid>{5594ADCD-FB53-4049-A306-0DCFAF3E9B01}</ProjectGuid>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Community.PowerToys.Run.Plugin.PerplexitySearchShortcut</RootNamespace>
+    <AssemblyName>Community.PowerToys.Run.Plugin.PerplexitySearchShortcut</AssemblyName>
+    <Version>1.0.0</Version>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- Set this to false to avoid conflicts with AssemblyInfo.cs attributes -->
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <NoWarn>$(NoWarn);NU1701</NoWarn>
+    <Platforms>x86;x64;ARM64</Platforms>
+    <PlatformTarget>$(Platform)</PlatformTarget>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Community.PowerToys.Run.Plugin.Dependencies" Version="0.88.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Images\perplexity.dark.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Images\perplexity.light.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="plugin.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  
+</Project>
