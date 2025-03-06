@@ -8,6 +8,7 @@ $projectDir = $PSScriptRoot
 $projectName = "PerplexitySearchShortcut"
 $buildConfiguration = "Release"
 $pluginName = "PerplexitySearchShortcut"
+$dotnetframework = "net9.0-windows10.0.22621.0"
 
 # Find the correct PowerToys Run plugin directory
 $possiblePluginDirs = @(
@@ -44,35 +45,97 @@ Set-Location $projectDir
 Write-Host "Ensuring icon files exist..." -ForegroundColor Cyan
 & "$PSScriptRoot\CreateSampleImages.ps1"
 
-# Step 1: Build the project
-Write-Host "Building $projectName in $buildConfiguration configuration..." -ForegroundColor Cyan
-dotnet build -c $buildConfiguration
+# Detect system architecture
+$architecture = [System.Environment]::GetEnvironmentVariable("PROCESSOR_ARCHITECTURE")
+$buildArch = "x64" # Default to x64
+if ($architecture -eq "ARM64") {
+    $buildArch = "ARM64"
+}
+Write-Host "Detected processor architecture: $architecture" -ForegroundColor Cyan
+Write-Host "Using build architecture: $buildArch" -ForegroundColor Cyan
 
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "Build failed! Exiting." -ForegroundColor Red
-    exit 1
+# Step 1: Check if solution file exists and build accordingly
+$solutionFile = Get-ChildItem -Path $projectDir -Filter "*.sln" | Select-Object -First 1
+if ($solutionFile) {
+    Write-Host "Found solution file: $($solutionFile.Name)" -ForegroundColor Cyan
+    Write-Host "Building solution in $buildConfiguration configuration for $buildArch..." -ForegroundColor Cyan
+    dotnet build $solutionFile.FullName -c $buildConfiguration -p:Platform=$buildArch
+} else {
+    Write-Host "No solution file found. Building project $projectName in $buildConfiguration configuration for $buildArch..." -ForegroundColor Cyan
+    dotnet build -c $buildConfiguration -p:Platform=$buildArch
 }
 
-# Get the build output directory - support both .NET 9.0 and fallback to other versions
+if ($LASTEXITCODE -ne 0) {
+    # If the specified architecture build fails, try without specific architecture
+    Write-Host "Build for specific architecture failed, trying default architecture..." -ForegroundColor Yellow
+    
+    if ($solutionFile) {
+        dotnet build $solutionFile.FullName -c $buildConfiguration
+    } else {
+        dotnet build -c $buildConfiguration
+    }
+    
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Build failed! Exiting." -ForegroundColor Red
+        exit 1
+    }
+}
+
+# Get the build output directory - support both solution-based and project-based builds, including architecture-specific folders
 $possibleBuildDirs = @(
-    (Join-Path $projectDir "bin\$buildConfiguration\net9.0-windows10.0.22621.0"),
-    (Join-Path $projectDir "bin\$buildConfiguration\net9.0-windows"),
-    (Join-Path $projectDir "bin\$buildConfiguration\net8.0-windows"),
-    (Join-Path $projectDir "bin\$buildConfiguration\net7.0-windows")
+    # For solution build with architecture-specific paths (ARM64, x64, AnyCPU, x86)
+    (Join-Path $projectDir "*\bin\*\$buildConfiguration\"$dotnetframework),
+    # For solution build (plugin might be in a project subfolder)
+    (Join-Path $projectDir "*\bin\$buildConfiguration\"$dotnetframework),
+    # For direct project build
+    (Join-Path $projectDir "bin\*\$buildConfiguration\"$dotnetframework),
+    (Join-Path $projectDir "bin\$buildConfiguration\"$dotnetframework)
 )
 
 $buildOutputDir = $null
 foreach ($dir in $possibleBuildDirs) {
-    if (Test-Path $dir) {
-        $buildOutputDir = $dir
-        Write-Host "Found build output directory: $buildOutputDir" -ForegroundColor Cyan
-        break
+    Write-Host "Checking directory pattern: $dir" -ForegroundColor DarkGray
+    # Using Get-Item with -Path and wildcard support
+    $matchingDirs = Get-Item -Path $dir -ErrorAction SilentlyContinue
+    if ($matchingDirs) {
+        foreach ($matchDir in $matchingDirs) {
+            Write-Host "Checking build output in: $($matchDir.FullName)" -ForegroundColor DarkGray
+            # Check if the directory contains our plugin DLL
+            if (Test-Path (Join-Path $matchDir.FullName "Community.PowerToys.Run.Plugin.$projectName.dll")) {
+                $buildOutputDir = $matchDir.FullName
+                Write-Host "Found build output directory with plugin: $buildOutputDir" -ForegroundColor Cyan
+                break
+            }
+        }
+        if ($buildOutputDir) { break }
     }
 }
 
 if (-not $buildOutputDir) {
-    Write-Host "Could not find build output directory. Please check the build logs." -ForegroundColor Red
-    exit 1
+    Write-Host "Could not find build output directory containing the plugin. Please check the build logs." -ForegroundColor Red
+    
+    # Additional diagnostic information
+    Write-Host "`nDiagnostic information:" -ForegroundColor Yellow
+    Write-Host "Looking for plugin DLL: Community.PowerToys.Run.Plugin.$projectName.dll" -ForegroundColor Yellow
+    
+    # Search entire bin directory for the DLL
+    Write-Host "Searching for the plugin DLL in all bin directories..." -ForegroundColor Yellow
+    $foundDlls = Get-ChildItem -Path (Join-Path $projectDir "*\bin") -Recurse -Filter "Community.PowerToys.Run.Plugin.$projectName.dll" -ErrorAction SilentlyContinue
+    
+    if ($foundDlls) {
+        Write-Host "Found potential plugin DLLs in the following locations:" -ForegroundColor Green
+        foreach ($dll in $foundDlls) {
+            Write-Host "  $($dll.FullName)" -ForegroundColor Green
+            # Use the first found DLL's directory
+            if (-not $buildOutputDir) {
+                $buildOutputDir = $dll.Directory.FullName
+                Write-Host "Using directory: $buildOutputDir" -ForegroundColor Cyan
+            }
+        }
+    } else {
+        Write-Host "No plugin DLL found in any bin directory." -ForegroundColor Red
+        exit 1
+    }
 }
 
 # Step 2: Create the plugin directory if it doesn't exist
@@ -143,6 +206,12 @@ Safe-Copy-Item `
     -Destination $powerToysPluginDir `
     -Description "plugin.json"
 
+#deps.json - use safe copy
+Safe-Copy-Item `
+    -Source "$buildOutputDir\Community.PowerToys.Run.Plugin.$projectName.deps.json" `
+    -Destination $powerToysPluginDir `
+    -Description "Community.PowerToys.Run.Plugin.$projectName.deps.json"
+
 # Images - Create directory if needed and copy
 if (-not (Test-Path "$powerToysPluginDir\Images")) {
     New-Item -Path "$powerToysPluginDir\Images" -ItemType Directory -Force | Out-Null
@@ -197,65 +266,15 @@ if (-not $mainDllCopied) {
     Write-Host "Please stop PowerToys completely and run this script again." -ForegroundColor Red
 }
 
-# Modify the dependency handling section of the script to use PowerToys' Wox.Plugin.dll
-$woxPluginSourcePath = "$env:LOCALAPPDATA\PowerToys\Wox.Plugin.dll"
 
-if (-not (Test-Path $woxPluginSourcePath)) {
-    Write-Host "Warning: Could not find Wox.Plugin.dll at $woxPluginSourcePath" -ForegroundColor Yellow
-    
-    # Try alternative locations
-    $alternativePaths = @(
-        "$env:LOCALAPPDATA\Microsoft\PowerToys\Wox.Plugin.dll",
-        "$env:LOCALAPPDATA\Microsoft\PowerToys\PowerToys Run\Wox.Plugin.dll",
-        "$env:ProgramFiles\PowerToys\Wox.Plugin.dll",
-        "$env:ProgramFiles\PowerToys\PowerToys Run\Wox.Plugin.dll"
-    )
-    
-    foreach ($path in $alternativePaths) {
-        if (Test-Path $path) {
-            $woxPluginSourcePath = $path
-            Write-Host "Found Wox.Plugin.dll at alternative location: $woxPluginSourcePath" -ForegroundColor Green
-            break
-        }
-    }
-    
-    if (-not (Test-Path $woxPluginSourcePath)) {
-        Write-Host "Critical Error: Could not find Wox.Plugin.dll in any expected location." -ForegroundColor Red
-        Write-Host "Please manually copy Wox.Plugin.dll from PowerToys installation to the plugin directory." -ForegroundColor Red
-        $continue = Read-Host "Do you want to continue without the dependency? (y/n)"
-        if ($continue -ne "y") {
-            exit 1
-        }
-    }
-}
-
-# If we found the Wox.Plugin.dll, copy it to the plugin directory
-if (Test-Path $woxPluginSourcePath) {
-    Copy-Item $woxPluginSourcePath $powerToysPluginDir -Force
-    Write-Host "Copied Wox.Plugin.dll from PowerToys installation" -ForegroundColor Green
-}
-
-# Check for additional .NET 9.0 dependencies that might be needed
-$dotNetDependencies = @(
-    "System.Runtime.dll",
-    "System.Collections.dll",
-    "System.ObjectModel.dll"
-)
-
-foreach ($dep in $dotNetDependencies) {
-    $depPath = Join-Path $buildOutputDir $dep
-    if (Test-Path $depPath) {
-        Copy-Item $depPath $powerToysPluginDir -Force
-        Write-Host "Copied dependency: $dep" -ForegroundColor Green
-    }
-}
 
 Write-Host "`nVerifying plugin installation..." -ForegroundColor Cyan
 $installedFiles = @(
     "$powerToysPluginDir\Community.PowerToys.Run.Plugin.$projectName.dll",
+    "$powerToysPluginDir\Community.PowerToys.Run.Plugin.$projectName.deps.json",
     "$powerToysPluginDir\plugin.json",
     "$powerToysPluginDir\Images\perplexity.light.png",
-    "$powerToysPluginDir\Wox.Plugin.dll"
+    "$powerToysPluginDir\Images\perplexity.dark.png"
 )
 
 $allFilesExist = $true
