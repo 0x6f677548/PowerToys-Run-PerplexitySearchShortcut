@@ -11,5 +11,6 @@
   "IcoPathLight": "Images\\perplexity.light.png",
   "IcoPathDark": "Images\\perplexity.dark.png",
   "IcoPath": "Images\\perplexity.light.png",
-  "Description": "Search Perplexity AI"
+  "Description": "Search Perplexity AI",
+  "DynamicLoading": false
 }

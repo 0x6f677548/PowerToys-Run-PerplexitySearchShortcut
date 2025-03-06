@@ -21,7 +21,7 @@ permissions: {}
 env:
   PLUGIN_NAME: PerplexitySearchShortcut
   DOTNET_VERSION: 9.0.x
-  DOTNET_FRAMEWORK: net9.0-windows
+  DOTNET_FRAMEWORK: net9.0-windows10.0.22621.0
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
 

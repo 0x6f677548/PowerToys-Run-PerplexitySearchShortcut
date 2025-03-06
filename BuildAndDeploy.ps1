@@ -55,6 +55,7 @@ if ($LASTEXITCODE -ne 0) {
 
 # Get the build output directory - support both .NET 9.0 and fallback to other versions
 $possibleBuildDirs = @(
+    (Join-Path $projectDir "bin\$buildConfiguration\net9.0-windows10.0.22621.0"),
     (Join-Path $projectDir "bin\$buildConfiguration\net9.0-windows"),
     (Join-Path $projectDir "bin\$buildConfiguration\net8.0-windows"),
     (Join-Path $projectDir "bin\$buildConfiguration\net7.0-windows")
