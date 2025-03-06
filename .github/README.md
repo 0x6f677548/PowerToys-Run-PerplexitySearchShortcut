@@ -10,13 +10,15 @@
 
 # Perplexity Search Shortcut - PowerToys Run Plugin
 
+![GitHub repo size](https://img.shields.io/github/repo-size/0x6f677548/PowerToys-Run-PerplexitySearchShortcut)
+![GitHub Release](https://img.shields.io/github/v/release/0x6f677548/PowerToys-Run-PerplexitySearchShortcut)
 [![build_create_release](https://github.com/0x6f677548/PowerToys-Run-PerplexitySearchShortcut/actions/workflows/build-create-release.yml/badge.svg)](https://github.com/0x6f677548/PowerToys-Run-PerplexitySearchShortcut/actions/workflows/build-create-release.yml)
 
 A [PowerToys Run](https://aka.ms/PowerToysOverview#powertoys-run) plugin that enables quick searching using [Perplexity AI](https://perplexity.ai/).
 
 ## Preview
 
-![Preview of the plugin in action](./.demo/perplexitysearchshortcut-demo1.gif)
+![Preview of the plugin in action](./screenshots/perplexitysearchshortcut-demo1-zoom.gif)
 
 
 ## Description
