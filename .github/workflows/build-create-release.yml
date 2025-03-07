@@ -136,14 +136,10 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         gh release create ${{ needs.validate.outputs.version }} --title ${{ needs.validate.outputs.version }} --generate-notes \
+          ${{ inputs.draft  && '--draft' || '' }} \
           'dist/${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-x64/${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-x64.zip' \
           'dist/${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-x64/${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-x64.msi' \
-          'dist/${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-x64/winget/manifests/${{ env.PLUGIN_NAME }}-manifests-${{ needs.validate.outputs.version }}-x64.zip' \
-          'dist/${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-ARM64/${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-ARM64.zip' \
-          'dist/${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-ARM64/${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-ARM64.msi' \
-          'dist/${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-ARM64/winget/manifests/${{ env.PLUGIN_NAME }}-manifests-${{ needs.validate.outputs.version }}-ARM64.zip' \          
-
-          ${{ inputs.draft  && '--draft' || '' }}
+          
 
     - name: Create release branch
       run: |
@@ -151,4 +147,3 @@ jobs:
         git config user.email "actions@github.com"
         git checkout -b "release/v${{ needs.validate.outputs.version }}"
         git push origin "release/v${{ needs.validate.outputs.version }}"
-          
