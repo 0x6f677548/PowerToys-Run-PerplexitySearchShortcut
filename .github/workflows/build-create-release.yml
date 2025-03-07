@@ -161,7 +161,6 @@ jobs:
 
       - name: Prepare artifact
         run: |
-          Remove-Item -Path bin\* -Recurse -Include *.xml, *.pdb, PowerToys.*, Wox.*
           # Create a temporary directory with the desired structure
           $tempDir = "temp_${{matrix.platform}}"
           $pluginDir = "$tempDir\${{ env.PLUGIN_NAME }}"
@@ -169,6 +168,9 @@ jobs:
           
           # Copy files from the target .net framework folder  to our new structure
           Copy-Item -Path "bin\${{matrix.platform}}\Release\${{ env.DOTNET_FRAMEWORK }}\*" -Destination "$pluginDir\" -Recurse
+
+          # Remove unnecessary files
+          Remove-Item -Path $pluginDir\* -Recurse -Include *.xml, *.pdb, PowerToys.*, Wox.*
           
       - name: Compress artifact
         run: |
