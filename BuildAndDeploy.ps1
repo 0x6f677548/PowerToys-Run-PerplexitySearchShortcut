@@ -227,8 +227,8 @@ catch {
 
 # After copying image files, verify they're valid
 Write-Host "Verifying image files..." -ForegroundColor Cyan
-$lightIconPath = "$powerToysPluginDir\Images\perplexity.light.png"
-$darkIconPath = "$powerToysPluginDir\Images\perplexity.dark.png"
+$lightIconPath = "$powerToysPluginDir\Images\pluginicon.light.png"
+$darkIconPath = "$powerToysPluginDir\Images\pluginicon.dark.png"
 
 if (Test-Path $lightIconPath) {
     try {
@@ -241,7 +241,7 @@ if (Test-Path $lightIconPath) {
         Write-Host "⚠️ Light icon file exists but may be corrupt or invalid" -ForegroundColor Yellow
         # Try to recreate and copy the icon
         & "$PSScriptRoot\CreateSampleImages.ps1"
-        Copy-Item "$projectDir\Images\perplexity.light.png" $lightIconPath -Force
+        Copy-Item "$projectDir\Images\pluginicon.light.png" $lightIconPath -Force
     }
 }
 
@@ -256,7 +256,7 @@ if (Test-Path $darkIconPath) {
         Write-Host "⚠️ Dark icon file exists but may be corrupt or invalid" -ForegroundColor Yellow
         # Try to recreate and copy the icon
         & "$PSScriptRoot\CreateSampleImages.ps1"
-        Copy-Item "$projectDir\Images\perplexity.dark.png" $darkIconPath -Force
+        Copy-Item "$projectDir\Images\pluginicon.dark.png" $darkIconPath -Force
     }
 }
 
@@ -273,8 +273,8 @@ $installedFiles = @(
     "$powerToysPluginDir\Community.PowerToys.Run.Plugin.$projectName.dll",
     "$powerToysPluginDir\Community.PowerToys.Run.Plugin.$projectName.deps.json",
     "$powerToysPluginDir\plugin.json",
-    "$powerToysPluginDir\Images\perplexity.light.png",
-    "$powerToysPluginDir\Images\perplexity.dark.png"
+    "$powerToysPluginDir\Images\pluginicon.light.png",
+    "$powerToysPluginDir\Images\pluginicon.dark.png"
 )
 
 $allFilesExist = $true

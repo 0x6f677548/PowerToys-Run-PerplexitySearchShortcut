@@ -22,10 +22,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Images\perplexity.dark.png">
+    <None Update="Images\pluginicon.dark.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Images\perplexity.light.png">
+    <None Update="Images\pluginicon.light.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="plugin.json">

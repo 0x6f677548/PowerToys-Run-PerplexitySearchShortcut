@@ -13,7 +13,7 @@ namespace Community.PowerToys.Run.Plugin.PerplexitySearchShortcut;
 public class Main : IPlugin, IPluginI18n
 {
     private PluginInitContext? _context;
-    private string _iconPath = "Images\\perplexity.dark.png"; // Default path
+    private string _iconPath = "Images\\pluginicon.dark.png"; // Default path
     private const string PerplexitySearchUrl = "https://www.perplexity.ai/?q={0}";
     
     public string Name => "Perplexity Search";
@@ -49,7 +49,7 @@ public class Main : IPlugin, IPluginI18n
         catch
         {
             // If reflection fails, just use the default icon path
-            _iconPath = "Images\\perplexity.dark.png";
+            _iconPath = "Images\\pluginicon.dark.png";
         }
     }
 

@@ -38,11 +38,11 @@ function Create-SamplePNG {
     }
 }
 
-Create-SamplePNG -path "$imageDir\perplexity.dark.png" -color "Black"
-Create-SamplePNG -path "$imageDir\perplexity.light.png" -color "Gray"
+Create-SamplePNG -path "$imageDir\pluginicon.dark.png" -color "Black"
+Create-SamplePNG -path "$imageDir\pluginicon.light.png" -color "Gray"
 
 # Verify the files exist
-if ((Test-Path "$imageDir\perplexity.light.png") -and (Test-Path "$imageDir\perplexity.dark.png")) {
+if ((Test-Path "$imageDir\pluginicon.light.png") -and (Test-Path "$imageDir\pluginicon.dark.png")) {
     Write-Host "Icon files exist and are ready to use." -ForegroundColor Green
 } else {
     Write-Host "Failed to verify icon files!" -ForegroundColor Red

@@ -8,9 +8,9 @@
   "Language": "csharp",
   "Website": "https://github.com/0x6f677548/PowerToys-Run-PerplexitySearchShortcut",
   "ExecuteFileName": "Community.PowerToys.Run.Plugin.PerplexitySearchShortcut.dll",
-  "IcoPathLight": "Images\\perplexity.light.png",
-  "IcoPathDark": "Images\\perplexity.dark.png",
-  "IcoPath": "Images\\perplexity.light.png",
+  "IcoPathLight": "Images\\pluginicon.light.png",
+  "IcoPathDark": "Images\\pluginicon.dark.png",
+  "IcoPath": "Images\\pluginicon.light.png",
   "Description": "Search Perplexity AI",
   "DynamicLoading": false
 }
