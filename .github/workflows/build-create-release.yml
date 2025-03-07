@@ -6,9 +6,10 @@ on:
   workflow_dispatch:
     inputs:
       draft:
-        description: 'Whether the release should be a draft '
+        description: 'Create a draft release'
         required: true
-        default: 'true'
+        type: boolean
+        default: true
 
 # set the run-name 
 run-name: ${{ github.ref_name }} ->build_create_release (
@@ -32,15 +33,14 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+  
     steps:
-      #validates that the draft is a valid boolean
-      - name: Validate draft
-        id: validate_draft
+      - name: Echo current date and time
+        id: datetime
         run: |
-          if [[ ! ${{ inputs.draft }} =~ ^(true|false)$ ]]; then
-            echo "Invalid draft: ${{ inputs.draft }}"
-            exit 1
-          fi
+          echo "datetime: $(date '+%Y-%m-%d %H:%M:%S')"
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -62,57 +62,7 @@ jobs:
             exit 1
           fi
 
-      - name: Ensure release doesn't exist
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          repo="${GITHUB_REPOSITORY}"
-          version="${{ steps.get_version.outputs.version }}"
-          
-          echo "Checking if release $version already exists..."
-          
-          # Use GitHub API to check if release exists
-          status_code=$(curl -s -o /dev/null -w "%{http_code}" \
-            -H "Authorization: token ${GITHUB_TOKEN}" \
-            -H "Accept: application/vnd.github.v3+json" \
-            "https://api.github.com/repos/${repo}/releases/tags/${version}")
-          
-          if [ "$status_code" == "200" ]; then
-            echo "Error: Release $version already exists!"
-            exit 1
-          elif [ "$status_code" == "404" ]; then
-            echo "✓ No existing release found with tag $version. Proceeding..."
-          else
-            echo "Error: Unexpected response from GitHub API: $status_code"
-            exit 1
-          fi
 
-      - name: Ensure release branch doesn't exist
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          version="${{ steps.get_version.outputs.version }}"
-          branch_name="release/v${version}"
-          
-          echo "Checking if branch $branch_name already exists..."
-          
-          # Fetch remote branches
-          git fetch origin --prune
-          
-          # Check if branch exists locally
-          if git show-ref --verify --quiet refs/heads/${branch_name}; then
-            echo "Error: Branch $branch_name already exists locally!"
-            exit 1
-          fi
-          
-          # Check if branch exists remotely
-          if git show-ref --verify --quiet refs/remotes/origin/${branch_name}; then
-            echo "Error: Branch $branch_name already exists on remote repository!"
-            exit 1
-          fi
-          
-          echo "✓ Branch $branch_name doesn't exist. Proceeding..."
-         
   build:
     name: Build
     needs: validate
@@ -128,16 +78,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Get version
-        id: get_version
-        shell: pwsh
-        run: |
-          $jsonContent=Get-Content -Path plugin.json -Raw
-          $jsonObject = $jsonContent | ConvertFrom-Json
-          $version = $jsonObject.Version
-          echo "Version: $version"
-          echo "version=$version" >> $env:GITHUB_OUTPUT
-          echo "version=$version" >> $env:GITHUB_ENV
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -179,77 +119,46 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.PLUGIN_NAME }}-${{ steps.get_version.outputs.version }}-${{matrix.platform}}
-          path: "${{ env.PLUGIN_NAME }}-${{ steps.get_version.outputs.version }}-${{matrix.platform}}.zip"
+          name: ${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-${{matrix.platform}}
+          path: "${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-${{matrix.platform}}.zip"
 
     
   create_release:
     name: create_release
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build, validate]
     permissions:
       id-token: write
       contents: write
     steps:
 
-    - name: Echo current date and time
-      id: datetime
-      run: |
-        echo "datetime: $(date '+%Y-%m-%d %H:%M:%S')"
-
     - name: Checkout
       uses: actions/checkout@v4
-
-    - name: Get version
-      id: get_version
-      # let's get the version from plugin.json
-      run: |
-        version=$(jq -r '.Version' plugin.json)
-        echo "version is $version"
-        echo "version=$version" >> $GITHUB_OUTPUT
-    
-    #validates that the version is a valid semver
-    - name: Validate version
-      id: validate_version
-      run: |
-        if [[ ! ${{ steps.get_version.outputs.version }} =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-          echo "Invalid version: ${{ steps.get_version.outputs.version }}"
-          exit 1
-        fi
 
       # note: this will download all artifacts to a directory for each artifact
       # https://github.com/actions/download-artifact/tree/v2.1.1/#download-all-artifacts
     - name: Download artifacts
       uses: actions/download-artifact@v4
       with:
-        path: bin/
+        path: dist/
         
     - name: Display structure of downloaded files
       run: ls -R
-      working-directory: bin/
+      working-directory: dist/
     
     - name: Create release branch
       run: |
         git config user.name "GitHub Actions"
         git config user.email "actions@github.com"
-        git checkout -b "release/v${{ steps.get_version.outputs.version }}"
-        git push origin "release/v${{ steps.get_version.outputs.version }}"
+        git checkout -b "release/v${{ needs.validate.outputs.version }}"
+        git push origin "release/v${{ needs.validate.outputs.version }}"
 
-    - name: Create DRAFT release through github cli and upload assets
-      env: 
+    - name: Create release through github cli and upload assets
+      env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      if: ${{ inputs.draft == 'true' }}
-      run: |        
-        gh release create ${{ steps.get_version.outputs.version }} --title ${{ steps.get_version.outputs.version }} --generate-notes \
-          'bin/${{ env.PLUGIN_NAME }}-${{ steps.get_version.outputs.version }}-x64/${{ env.PLUGIN_NAME }}-${{ steps.get_version.outputs.version }}-x64.zip' \
-          'bin/${{ env.PLUGIN_NAME }}-${{ steps.get_version.outputs.version }}-ARM64/${{ env.PLUGIN_NAME }}-${{ steps.get_version.outputs.version }}-ARM64.zip' \
-          --draft
-    
-    - name: Create PUBLISHED release through github cli and upload assets
-      env: 
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      if: ${{ inputs.draft == 'false' }}
-      run: |        
-        gh release create ${{ steps.get_version.outputs.version }} --title ${{ steps.get_version.outputs.version }} --generate-notes \
-          'bin/${{ env.PLUGIN_NAME }}-${{ steps.get_version.outputs.version }}-x64/${{ env.PLUGIN_NAME }}-${{ steps.get_version.outputs.version }}-x64.zip' \
-          'bin/${{ env.PLUGIN_NAME }}-${{ steps.get_version.outputs.version }}-ARM64/${{ env.PLUGIN_NAME }}-${{ steps.get_version.outputs.version }}-ARM64.zip'
+      run: |
+        gh release create ${{ needs.validate.outputs.version }} --title ${{ needs.validate.outputs.version }} --generate-notes \
+          'dist/${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-x64/${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-x64.zip' \
+          'dist/${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-ARM64/${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-ARM64.zip' \
+          ${{ inputs.draft  && '--draft' || '' }}
+      
