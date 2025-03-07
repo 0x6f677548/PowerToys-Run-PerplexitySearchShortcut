@@ -84,11 +84,11 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Install WiX Toolset
-        run: dotnet tool install -g WiX
-  
       - name: Build
         run: dotnet build PowerToys-Run-${{ env.PLUGIN_NAME }}.sln --configuration Release /p:Platform=${{matrix.architecture}} /p:EnableWindowsTargeting=true
+
+      - name: Install WiX Toolset
+        run: dotnet tool install -g WiX
 
       - name: Create release assets
         shell: pwsh

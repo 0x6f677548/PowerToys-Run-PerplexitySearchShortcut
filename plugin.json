@@ -4,7 +4,7 @@
   "IsGlobal": true,
   "Name": "Perplexity Search",
   "Author": "0x6f677548 (Hugo Batista)",
-  "Version": "0.1.0",
+  "Version": "0.1.1",
   "Language": "csharp",
   "Website": "https://github.com/0x6f677548/PowerToys-Run-PerplexitySearchShortcut",
   "ExecuteFileName": "Community.PowerToys.Run.Plugin.PerplexitySearchShortcut.dll",
