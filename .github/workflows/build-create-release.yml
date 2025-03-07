@@ -143,6 +143,11 @@ jobs:
       run: |
         gh release create ${{ needs.validate.outputs.version }} --title ${{ needs.validate.outputs.version }} --generate-notes \
           'dist/${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-x64/${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-x64.zip' \
+          'dist/${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-x64/${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-x64.msi' \
+          'dist/${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-x64/winget/manifests/${{ needs.validate.outputs.version }}/' \
           'dist/${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-ARM64/${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-ARM64.zip' \
+          'dist/${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-ARM64/${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-ARM64.msi' \
+          'dist/${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-ARM64/winget/manifests/${{ needs.validate.outputs.version }}/' \          
+
           ${{ inputs.draft  && '--draft' || '' }}
       
