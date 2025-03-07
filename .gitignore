@@ -2,3 +2,4 @@ obj/
 bin/
 dist/
 ptr.exe
+installer/wix

@@ -1,0 +1,22 @@
+PackageIdentifier: PerplexitySearchShortcut.PowerToysRunPlugin
+PackageVersion: $version$
+PackageLocale: en-US
+Publisher: 0x6f677548
+PublisherUrl: https://github.com/0x6f677548
+PublisherSupportUrl: https://github.com/0x6f677548/PowerToys-Run-PerplexitySearchShortcut/issues
+PackageName: PowerToys Run Perplexity Search Plugin
+PackageUrl: https://github.com/0x6f677548/PowerToys-Run-PerplexitySearchShortcut
+License: MIT
+LicenseUrl: https://github.com/0x6f677548/PowerToys-Run-PerplexitySearchShortcut/blob/master/LICENSE
+ShortDescription: A PowerToys Run plugin that provides quick search on Perplexity.ai
+Description: This plugin enhances PowerToys Run with the ability to quickly search on Perplexity.ai using a simple prefix command.
+Moniker: powertoys-perplexity-search
+Tags:
+  - powertoys
+  - powertoys-run
+  - plugin
+  - perplexity
+  - search
+  - productivity
+ManifestType: defaultLocale
+ManifestVersion: 1.4.0

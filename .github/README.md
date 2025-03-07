@@ -33,15 +33,27 @@ This plugin allows you to quickly search the web using Perplexity AI directly fr
 
 ## Installation
 
+### Via Windows Package Manager (winget)
+
+```shell
+winget install PerplexitySearchShortcut.PowerToysRunPlugin
+```
+
+### Via MSI Installer
+
+1. Download the MSI installer from the [Releases page](https://github.com/0x6f677548/PowerToys-Run-PerplexitySearchShortcut/releases)
+2. Run the installer and follow the prompts
+3. Restart PowerToys
+
 ### Via [ptr](https://github.com/8LWXpg/ptr)
 
 ```shell
 ptr add PerplexitySearchShortcut 0x6f677548/PowerToys-Run-PerplexitySearchShortcut
 ```
 
-### Manual Installation
+### Manual Installation (ZIP)
 
-1. Download the latest release from the [Releases page](https://github.com/0x6f677548/PowerToys-Run-PerplexitySearchShortcut/releases)
+1. Download the ZIP file from the [Releases page](https://github.com/0x6f677548/PowerToys-Run-PerplexitySearchShortcut/releases)
 2. Extract the archive to `%LOCALAPPDATA%\Microsoft\PowerToys\PowerToys Run\Plugins`
 3. Restart PowerToys Run
 
