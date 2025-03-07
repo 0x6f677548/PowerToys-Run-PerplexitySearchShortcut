@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  
+  <!--
+    Variables expected to be defined at compile time:
+    $(Version) - The version of the product
+    $(SourceDir) - The directory containing the files to include
+    $(PluginDllName) - The name of the plugin DLL
+    $(PluginDepsJsonName) - The name of the plugin dependencies JSON
+    $(PluginJsonName) - The name of the plugin JSON file
+  -->
+  
+  <?define UpgradeCode = "{DCBD8AEE-1933-47C2-A6E8-F9C2FF642F68}" ?>
+  <?define ProductName = "PerplexitySearchShortcut PowerToys Run Plugin" ?>
+  <?define Manufacturer = "0x6f677548" ?>
+  
+  <Package Name="$(var.ProductName)" 
+           Language="1033" 
+           Version="$(Version)" 
+           Manufacturer="$(var.Manufacturer)" 
+           UpgradeCode="$(var.UpgradeCode)"
+           InstallerVersion="200" 
+           Compressed="yes">
+           
+    <SummaryInformation Description="PerplexitySearchShortcut PowerToys Run Plugin" 
+                       Keywords="Installer,PowerToys,Plugin" 
+                       Manufacturer="$(var.Manufacturer)" />
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <Property Id="ARPURLINFOABOUT" Value="https://github.com/0x6f677548/PowerToys-Run-PerplexitySearchShortcut" />
+    
+    <!-- Combined feature with all component groups -->
+    <Feature Id="ProductFeature" Title="PerplexitySearch Plugin" Level="1">
+      <ComponentRef Id="PluginDLL" />
+      <ComponentRef Id="PluginDepsJson" />
+      <ComponentRef Id="PluginJson" />
+      <ComponentRef Id="LightIcon" />
+      <ComponentRef Id="DarkIcon" />
+    </Feature>
+    
+    <!-- Directory structure - only the essential paths -->
+    <StandardDirectory Id="LocalAppDataFolder">
+      <Directory Id="MicrosoftDir" Name="Microsoft">
+        <Directory Id="PowerToysDir" Name="PowerToys">
+          <Directory Id="PowerToysRunDir" Name="PowerToys Run">
+            <Directory Id="PluginsDir" Name="Plugins">
+              <Directory Id="INSTALLFOLDER" Name="PerplexitySearchShortcut">
+                <Component Id="PluginDLL" Guid="*">
+                  <File Id="PluginDLLFile" KeyPath="yes" Source="$(SourceDir)\$(PluginDllName)" />
+                </Component>
+                <Component Id="PluginDepsJson" Guid="*">
+                  <File Id="PluginDepsJsonFile" KeyPath="yes" Source="$(SourceDir)\$(PluginDepsJsonName)" />
+                </Component>
+                <Component Id="PluginJson" Guid="*">
+                  <File Id="PluginJsonFile" KeyPath="yes" Source="$(SourceDir)\$(PluginJsonName)" />
+                </Component>
+                <Directory Id="ImagesDir" Name="Images">
+                  <Component Id="LightIcon" Directory="ImagesDir" Guid="*">
+                    <File Id="LightIconFile" KeyPath="yes" Source="$(SourceDir)\Images\pluginicon.light.png" />
+                  </Component>
+                  <Component Id="DarkIcon" Directory="ImagesDir" Guid="*">
+                    <File Id="DarkIconFile" KeyPath="yes" Source="$(SourceDir)\Images\pluginicon.dark.png" />
+                  </Component>
+                </Directory>
+              </Directory>
+            </Directory>
+          </Directory>
+        </Directory>
+      </Directory>
+    </StandardDirectory>
+
+    
+  </Package>
+</Wix>

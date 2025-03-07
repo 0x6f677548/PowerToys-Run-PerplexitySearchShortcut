@@ -3,10 +3,7 @@ param(
     [string]$Version,
     
     [Parameter(Mandatory=$false)]
-    [string]$ArchOverride,
-    
-    [Parameter(Mandatory=$false)]
-    [string]$WixToolsetPath = "C:\Program Files (x86)\WiX Toolset v3.14\bin"
+    [string]$Architecture = [System.Environment]::GetEnvironmentVariable("PROCESSOR_ARCHITECTURE")
 )
 
 $ErrorActionPreference = "Stop"
@@ -14,8 +11,7 @@ $ErrorActionPreference = "Stop"
 # Define core paths and project-specific constants
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $outputDir = Join-Path $projectRoot "dist"
-$wixDir = Join-Path $projectRoot "build\wix"
-$wixObjDir = Join-Path $outputDir "wixobj"
+$buildDir = $PSScriptRoot
 $projectName = "PerplexitySearchShortcut"
 $projectOutputDir = Join-Path $outputDir $projectName
 $projectFilesPrefix= "Community.PowerToys.Run.Plugin.$projectName"
@@ -23,20 +19,41 @@ $pluginDll = "$projectFilesPrefix.dll"
 $pluginDepsJson = "$projectFilesPrefix.deps.json"
 $pluginJson = "plugin.json"
 $packageIdentifier = "$projectName.PowerToysRunPlugin"
-$buildArch = "x64" # Default to x64
+if ($Architecture -eq "AMD64") {
+    $Architecture = "x64"
+} 
 
-# Detect system architecture
-$architecture = [System.Environment]::GetEnvironmentVariable("PROCESSOR_ARCHITECTURE")
-if ($architecture -eq "ARM64") {
-    $buildArch = "ARM64"
-}
-# Allow override through parameter
-if ($ArchOverride) {
-    $buildArch = $ArchOverride
-}
-Write-Host "Detected processor architecture: $architecture" -ForegroundColor Cyan
-Write-Host "Using build architecture: $buildArch" -ForegroundColor Cyan
+Write-Host "Using build architecture: $Architecture" -ForegroundColor Cyan
 
+# Check if WiX .NET tool is installed
+$wixInstalled = $false
+try {
+    $wixVersion = & dotnet tool list -g | Select-String "wix" | Out-String
+    if ($wixVersion -match "wix") {
+        $wixInstalled = $true
+        Write-Host "✅ WiX .NET tool is installed: $($wixVersion.Trim())" -ForegroundColor Green
+    }
+} catch {
+    $wixInstalled = $false
+}
+
+if (-not $wixInstalled) {
+    Write-Host "❌ WiX .NET tool is not installed" -ForegroundColor Yellow
+    Write-Host "Would you like to install it now? (y/n)" -ForegroundColor Cyan
+    $install = Read-Host
+    if ($install -eq "y") {
+        Write-Host "Installing WiX .NET tool..." -ForegroundColor Cyan
+        & dotnet tool install -g wix
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "⚠️ Failed to install WiX .NET tool"
+            exit 1
+        }
+        Write-Host "✅ WiX .NET tool installed successfully" -ForegroundColor Green
+    } else {
+        Write-Error "⚠️ WiX .NET tool is required to build the MSI"
+        exit 1
+    }
+}
 
 # Version detection code
 if (-not $Version) {
@@ -60,40 +77,12 @@ if (-not $Version) {
         exit 1
     }
 }
-$zipFileName = "$projectFilesPrefix-$Version-$buildArch.zip"
-$msiFileName = "$projectName-$Version-$buildArch.msi"
-
-
-
-# Verify WiX toolset exists
-if (-not (Test-Path $WixToolsetPath)) {
-    Write-Error "⚠️ WiX Toolset not found at path: $WixToolsetPath. Please install WiX Toolset or specify the correct path using the -WixToolsetPath parameter."
-    Write-Host "You can download WiX Toolset v3.14 or later from https://wixtoolset.org/releases/"
-    exit 1
-}
-
-# Check if required WiX tools exist
-$requiredTools = @("candle.exe", "light.exe")
-$missingTools = $requiredTools | Where-Object { !(Test-Path (Join-Path $WixToolsetPath $_)) }
-if ($missingTools.Count -gt 0) {
-    Write-Error "⚠️ The following required WiX tools are missing from $WixToolsetPath`: $($missingTools -join ', ')"
-    exit 1
-}
-
-Write-Host "Using WiX Toolset from: $WixToolsetPath" -ForegroundColor Cyan
-
-# Create the wix directory if it doesn't exist (needed for license.rtf)
-If (!(Test-Path $wixDir)) {
-    Write-Host "Creating wix directory for license file..."
-    New-Item -ItemType Directory -Path $wixDir -Force | Out-Null
-}
+$zipFileName = "$projectFilesPrefix-$Version-$Architecture.zip"
+$msiFileName = "$projectName-$Version-$Architecture.msi"
 
 # Ensure output directories exist
 If (!(Test-Path $outputDir)) {
     New-Item -ItemType Directory -Path $outputDir | Out-Null
-}
-If (!(Test-Path $wixObjDir)) {
-    New-Item -ItemType Directory -Path $wixObjDir | Out-Null
 }
 If (!(Test-Path $projectOutputDir)) {
     New-Item -ItemType Directory -Path $projectOutputDir | Out-Null
@@ -103,18 +92,18 @@ If (!(Test-Path $projectOutputDir)) {
 $dllPath = Get-ChildItem -Path $projectRoot -Recurse -Filter $pluginDll | 
     Where-Object { 
         $_.Directory -like "*\bin\*" -and 
-        ($_.FullName -like "*\$buildArch\*" -or $_.Directory.Name -eq $buildArch)
+        ($_.FullName -like "*\$Architecture\*" -or $_.Directory.Name -eq $Architecture)
     } | 
     Select-Object -First 1
 
 # If not found, try the default search as fallback
 if ($null -eq $dllPath) {
-    Write-Host "No architecture-specific build found for $buildArch, trying default build paths..." -ForegroundColor Yellow
+    Write-Host "No architecture-specific build found for $Architecture, trying default build paths..." -ForegroundColor Yellow
     $dllPath = Get-ChildItem -Path $projectRoot -Recurse -Filter $pluginDll | Where-Object { $_.Directory -like "*\bin\*" } | Select-Object -First 1
 }
 
 if ($null -eq $dllPath) {
-    Write-Error "⚠️ Could not find the compiled DLL for architecture $buildArch. Have you built the project?"
+    Write-Error "⚠️ Could not find the compiled DLL for architecture $Architecture. Have you built the project?"
     exit 1
 }
 
@@ -124,8 +113,6 @@ Write-Host "Found DLL at: $($dllPath.FullName)" -ForegroundColor Green
 # Output path variables - defined at point of use for clarity
 $zipPath = Join-Path $outputDir $zipFileName
 $msiPath = Join-Path $outputDir $msiFileName
-$licenseFile = Join-Path $projectRoot "LICENSE"
-$licenseRtfFile = Join-Path $wixDir "license.rtf"
 
 # Copy all required files to dist folder
 # DLL file
@@ -189,64 +176,31 @@ Write-Host "✅ Created ZIP file: $zipPath"
 # Calculate zip SHA256 hash
 $zipHash = Get-FileHash -Path $zipPath -Algorithm SHA256
 
-# Create a license.rtf file for WiX installer
-# If LICENSE exists, convert it to RTF, otherwise create a basic RTF
-if (Test-Path $licenseFile) {
-    # Read license content as plain text
-    $licenseContent = Get-Content -Path $licenseFile -Raw
-    
-    # Create the most basic RTF document possible
-    $rtfContent = "{\rtf1\ansi\deff0{\fonttbl{\f0\fnil\fcharset0 Arial;}}\viewkind4\uc1\pard\f0\fs20 "
-    
-    # Simply escape any special RTF characters and append the text
-    $rtfText = $licenseContent -replace '\\', '\\\\' -replace '{', '\{' -replace '}', '\}' -replace '\r\n|\n', '\line '
-    $rtfContent += $rtfText
-    $rtfContent += "}"
-    
-    # Write to file with correct encoding
-    [System.IO.File]::WriteAllText($licenseRtfFile, $rtfContent)
-    
-    Write-Host "Created license.rtf from LICENSE file"
-} elseif (!(Test-Path $licenseRtfFile)) {
-    # Create a basic license.rtf if LICENSE doesn't exist and rtf doesn't already exist
-    Write-Host "Creating basic license.rtf..."
-    
-    $licenseContent = @'
-{\rtf1\ansi\ansicpg1252\deff0\nouicompat\deflang1033{\fonttbl{\f0\fnil\fcharset0 Calibri;}}
-{\*\generator Riched20 10.0.19041}\viewkind4\uc1 
-\pard\sa200\sl276\slmult1\f0\fs22\lang9 MIT License\par
-Copyright (c) 2023 0x6f677548\par
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\par
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\par
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\par
-}
-'@
-    $licenseContent | Out-File -FilePath $licenseRtfFile -Encoding ascii
-}
+# Build MSI using WiX .NET tool
+Write-Host "Building MSI with WiX .NET tool..." -ForegroundColor Cyan
 
-# Build MSI using WiX Toolset
-Write-Host "Building MSI with WiX Toolset from $WixToolsetPath..."
+# Build MSI directly using the WiX file from the build directory
+$wxsPath = Join-Path $buildDir "$projectName.wxs"
 
-# Compile the WiX source files
-& "$WixToolsetPath\candle.exe" -arch $buildArch -ext WixUIExtension -out "$wixObjDir\" (Join-Path $projectRoot "installer\wix\$projectName.wxs") `
-    -dVersion="$Version" -dSourceDir="$projectOutputDir\" -dPluginDllName="$pluginDll" -dPluginDepsJsonName="$pluginDepsJson" -dPluginJsonName="$pluginJson"
+# Construct command string with proper formatting for Invoke-Expression
+# Using define instead of bindvariable for WiX v5 compatibility
+$buildCommand = "wix build ""$wxsPath"" -arch $Architecture -d Version=""$Version"" -d SourceDir=""$projectOutputDir"" -d PluginDllName=""$pluginDll"" -d PluginDepsJsonName=""$pluginDepsJson"" -d PluginJsonName=""$pluginJson"" -o ""$msiPath"""
+
+# Display the command for the user and execute it
+Write-Host "Executing: $buildCommand" -ForegroundColor DarkCyan
+Invoke-Expression $buildCommand
 
 if ($LASTEXITCODE -ne 0) {
-    Write-Error "⚠️ Failed to compile WiX source files"
+    Write-Error "⚠️ Failed to build MSI with WiX .NET tool"
     exit 1
 }
 
-# Link the MSI
-& "$WixToolsetPath\light.exe" -ext WixUIExtension `
-    -sval `
-    $(if (Test-Path $licenseRtfFile) {"-dWixUILicenseRtf=$licenseRtfFile"}) `
-    -out "$msiPath" -pdbout "$wixObjDir\$projectName.wixpdb" "$wixObjDir\$projectName.wixobj"
-
-if ($LASTEXITCODE -ne 0) {
-    Write-Error "⚠️ Failed to link MSI"
+if (Test-Path $msiPath) {
+    Write-Host "✅ Created MSI file: $msiPath" -ForegroundColor Green
+} else {
+    Write-Error "⚠️ Failed to create MSI file"
     exit 1
 }
-Write-Host "✅ Created MSI file: $msiPath"
 
 # Calculate MSI SHA256 hash
 $msiHash = Get-FileHash -Path $msiPath -Algorithm SHA256
@@ -257,14 +211,14 @@ $zipHash | Out-File -FilePath "$zipPath.sha256" -Encoding ascii
 # write msi hash to msi.sha256 file
 $msiHash | Out-File -FilePath "$msiPath.sha256" -Encoding ascii
 
-Write-Host "Release packages created for architecture: $buildArch"
+Write-Host "Release packages created for architecture: $Architecture"
 Write-Host "ZIP: $zipPath"
 Write-Host "ZIP SHA256: $($zipHash.Hash)"
 Write-Host "MSI: $msiPath"
 Write-Host "MSI SHA256: $($msiHash.Hash)"
 
 # Now create the winget manifests from templates
-$manifestTemplatesFolder = Join-Path $projectRoot "installer\winget\manifest_templates"
+$manifestTemplatesFolder = Join-Path $projectRoot "build\winget\manifest_templates"
 $distWingetFolder = Join-Path $outputDir "winget\manifests"
 $manifestVersionFolder = Join-Path $distWingetFolder "$Version"
 
@@ -289,7 +243,7 @@ if (Test-Path $manifestTemplatesFolder) {
             
             # Replace variables in the format $var$ with their values
             $content = $content.Replace('$version$', $Version)
-            $content = $content.Replace('$buildarch$', $buildArch)
+            $content = $content.Replace('$architecture$', $Architecture)
             $content = $content.Replace('$sha256$', $msiHash.Hash)
             
             # Create the output filename with the correct version
@@ -315,6 +269,6 @@ else {
     Write-Host "- $packageIdentifier.locale.en-US.yaml"
     Write-Host "`nIn template files, use the following variables:"
     Write-Host "- \$version\$ - will be replaced with the package version"
-    Write-Host "- \$buildarch\$ - will be replaced with the build architecture (x64 or ARM64)"
+    Write-Host "- \$Architecture\$ - will be replaced with the build architecture (x64 or ARM64)"
     Write-Host "- \$sha256\$ - will be replaced with the MSI SHA256 hash"
 }

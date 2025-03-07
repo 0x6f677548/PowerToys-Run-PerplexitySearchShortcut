@@ -3,8 +3,8 @@ PackageVersion: $version$
 MinimumOSVersion: 10.0.17763.0
 InstallerType: msi
 Installers:
-  - Architecture: $buildarch$
-    InstallerUrl: https://github.com/0x6f677548/PowerToys-Run-PerplexitySearchShortcut/releases/download/$version$/PerplexitySearchShortcut-$version$-$buildarch$.msi
+  - Architecture: $architecture$
+    InstallerUrl: https://github.com/0x6f677548/PowerToys-Run-PerplexitySearchShortcut/releases/download/$version$/PerplexitySearchShortcut-$version$-$architecture$.msi
     InstallerSha256: $sha256$
     InstallModes:
       - silent
