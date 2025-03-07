@@ -4,10 +4,9 @@
 #
 
 # Configuration
-$projectDir = $PSScriptRoot
-$projectName = "PerplexitySearchShortcut"
+$projectDir = Split-Path -Parent $PSScriptRoot
 $buildConfiguration = "Release"
-$pluginName = "PerplexitySearchShortcut"
+$projectName = "PerplexitySearchShortcut"
 $dotnetframework = "net9.0-windows10.0.22621.0"
 
 # Find the correct PowerToys Run plugin directory
@@ -21,7 +20,7 @@ $possiblePluginDirs = @(
 $powerToysPluginDir = $null
 foreach ($dir in $possiblePluginDirs) {
     if (Test-Path $dir) {
-        $powerToysPluginDir = "$dir\$pluginName"
+        $powerToysPluginDir = "$dir\$projectName"
         Write-Host "Found PowerToys Run plugins directory at: $dir" -ForegroundColor Cyan
         break
     }
@@ -31,7 +30,7 @@ if (-not $powerToysPluginDir) {
     Write-Host "Could not find PowerToys Run plugins directory. Please enter the path manually:" -ForegroundColor Yellow
     $userPath = Read-Host "PowerToys Run plugins directory path"
     if (Test-Path $userPath) {
-        $powerToysPluginDir = "$userPath\$pluginName"
+        $powerToysPluginDir = "$userPath\$projectName"
     } else {
         Write-Host "Invalid path. Exiting." -ForegroundColor Red
         exit 1

@@ -2,7 +2,8 @@
 Add-Type -AssemblyName System.Drawing
 Add-Type -AssemblyName System.Windows.Forms
 
-$imageDir = Join-Path $PSScriptRoot "Images"
+$projectRoot = Split-Path -Parent $PSScriptRoot
+$imageDir = Join-Path $projectRoot "Images"
 New-Item -ItemType Directory -Force -Path $imageDir | Out-Null
 
 function Create-SamplePNG {

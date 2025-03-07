@@ -53,7 +53,7 @@ If you want to build and deploy the plugin directly from source:
 2. Run the provided PowerShell script:
 
 ```powershell
-.\BuildAndDeploy.ps1
+.\build\BuildAndDeploy.ps1
 ```
 
 This script will:
