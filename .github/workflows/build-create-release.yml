@@ -68,7 +68,7 @@ jobs:
     needs: validate
     strategy:
       matrix:
-        platform: [x64, ARM64]
+        architecture: [x64, ARM64]
     permissions:
       contents: write
    
@@ -84,43 +84,27 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      # Add caching for NuGet packages to speed up builds
-      - name: Cache NuGet packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json', '**/packages.config') }}
-          restore-keys: |
-            ${{ runner.os }}-nuget-
-
+      - name: Install WiX Toolset
+        run: dotnet tool install -g WiX
+  
       - name: Build
-        run: dotnet build PowerToys-Run-${{ env.PLUGIN_NAME }}.sln --configuration Release /p:Platform=${{matrix.platform}} /p:EnableWindowsTargeting=true
+        run: dotnet build PowerToys-Run-${{ env.PLUGIN_NAME }}.sln --configuration Release /p:Platform=${{matrix.architecture}} /p:EnableWindowsTargeting=true
 
+      - name: Create release assets
+        shell: pwsh
+        run: |
+          .\build\CreateReleaseAssets.ps1 -architecture ${{ matrix.architecture }} -Version ${{needs.validate.outputs.version}}
+  
       - name: List the output files
         run: ls -R 
+        working-directory: dist/
 
-      - name: Prepare artifact
-        run: |
-          # Create a temporary directory with the desired structure
-          $tempDir = "temp_${{matrix.platform}}"
-          $pluginDir = "$tempDir\${{ env.PLUGIN_NAME }}"
-          New-Item -Path $pluginDir -ItemType Directory -Force
-          
-          # Copy files from the target .net framework folder  to our new structure
-          Copy-Item -Path "bin\${{matrix.platform}}\Release\${{ env.DOTNET_FRAMEWORK }}\*" -Destination "$pluginDir\" -Recurse
-
-          # Remove unnecessary files
-          Remove-Item -Path $pluginDir\* -Recurse -Include *.xml, *.pdb, PowerToys.*, Wox.*
-          
-      - name: Compress artifact
-        run: |
-          Compress-Archive -Path "temp_${{matrix.platform}}\${{ env.PLUGIN_NAME }}" -DestinationPath "${{ env.PLUGIN_NAME }}-${{ steps.get_version.outputs.version }}-${{matrix.platform}}.zip"
-          
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-${{matrix.platform}}
-          path: "${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-${{matrix.platform}}.zip"
+          name: ${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-${{matrix.architecture}}
+          path: dist/
+
 
     
   create_release:
