@@ -139,7 +139,10 @@ jobs:
           ${{ inputs.draft  && '--draft' || '' }} \
           'dist/${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-x64/${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-x64.zip' \
           'dist/${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-x64/${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-x64.msi' \
-          'dist/${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-x64/winget/manifests/${{ env.PLUGIN_NAME }}-manifests-${{ needs.validate.outputs.version }}-x64.zip' 
+          'dist/${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-x64/winget/manifests/${{ env.PLUGIN_NAME }}-manifests-${{ needs.validate.outputs.version }}-x64.zip' \
+          'dist/${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-ARM64/${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-ARM64.zip' \
+          'dist/${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-ARM64/${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-ARM64.msi' \
+          'dist/${{ env.PLUGIN_NAME }}-${{ needs.validate.outputs.version }}-ARM64/winget/manifests/${{ env.PLUGIN_NAME }}-manifests-${{ needs.validate.outputs.version }}-ARM64.zip'
           
 
     - name: Create release branch
