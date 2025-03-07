@@ -254,6 +254,11 @@ if (Test-Path $manifestTemplatesFolder) {
             Set-Content -Path $outputPath -Value $content
             Write-Host "Created $outputFileName from template"
         }
+
+        # create a zip file of the manifests
+        $manifestZipPath = Join-Path $distWingetFolder "$ProjectName-manifests-$Version-$Architecture.zip"
+        Compress-Archive -Path $manifestVersionFolder -DestinationPath $manifestZipPath -Force
+        Write-Host "`n✅ Created ZIP file of manifests: $manifestZipPath"
         
         Write-Host "`n ✅ Winget manifests created successfully in $manifestVersionFolder"
         Write-Host "You can submit these manifests to the winget-pkgs repository after release."
