@@ -77,7 +77,7 @@ if (-not $Version) {
         exit 1
     }
 }
-$zipFileName = "$projectFilesPrefix-$Version-$Architecture.zip"
+$zipFileName = "$projectName-$Version-$Architecture.zip"
 $msiFileName = "$projectName-$Version-$Architecture.msi"
 
 # Ensure output directories exist
