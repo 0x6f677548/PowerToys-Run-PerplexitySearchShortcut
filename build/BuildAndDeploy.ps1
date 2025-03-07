@@ -46,22 +46,22 @@ Write-Host "Ensuring icon files exist..." -ForegroundColor Cyan
 
 # Detect system architecture
 $architecture = [System.Environment]::GetEnvironmentVariable("PROCESSOR_ARCHITECTURE")
-$buildArch = "x64" # Default to x64
+$platform = "x64" # Default to x64
 if ($architecture -eq "ARM64") {
-    $buildArch = "ARM64"
+    $platform = "ARM64"
 }
 Write-Host "Detected processor architecture: $architecture" -ForegroundColor Cyan
-Write-Host "Using build architecture: $buildArch" -ForegroundColor Cyan
+Write-Host "Using build architecture: $platform" -ForegroundColor Cyan
 
 # Step 1: Check if solution file exists and build accordingly
 $solutionFile = Get-ChildItem -Path $projectDir -Filter "*.sln" | Select-Object -First 1
 if ($solutionFile) {
     Write-Host "Found solution file: $($solutionFile.Name)" -ForegroundColor Cyan
-    Write-Host "Building solution in $buildConfiguration configuration for $buildArch..." -ForegroundColor Cyan
-    dotnet build $solutionFile.FullName -c $buildConfiguration -p:Platform=$buildArch
+    Write-Host "Building solution in $buildConfiguration configuration for $platform..." -ForegroundColor Cyan
+    dotnet build $solutionFile.FullName -c $buildConfiguration -p:Platform=$platform
 } else {
-    Write-Host "No solution file found. Building project $projectName in $buildConfiguration configuration for $buildArch..." -ForegroundColor Cyan
-    dotnet build -c $buildConfiguration -p:Platform=$buildArch
+    Write-Host "No solution file found. Building project $projectName in $buildConfiguration configuration for $platform..." -ForegroundColor Cyan
+    dotnet build -c $buildConfiguration -p:Platform=$platform
 }
 
 if ($LASTEXITCODE -ne 0) {
