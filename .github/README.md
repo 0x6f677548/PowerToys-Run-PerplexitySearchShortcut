@@ -12,7 +12,7 @@
 
 ![GitHub repo size](https://img.shields.io/github/repo-size/0x6f677548/PowerToys-Run-PerplexitySearchShortcut)
 ![GitHub Release](https://img.shields.io/github/v/release/0x6f677548/PowerToys-Run-PerplexitySearchShortcut)
-[![build_create_release](https://github.com/0x6f677548/PowerToys-Run-PerplexitySearchShortcut/actions/workflows/build-create-release.yml/badge.svg)](https://github.com/0x6f677548/PowerToys-Run-PerplexitySearchShortcut/actions/workflows/build-create-release.yml)
+[![build_create_release](https://go.hugobatista.com/gh/PowerToys-Run-PerplexitySearchShortcut/actions/workflows/build-create-release.yml/badge.svg)](https://go.hugobatista.com/gh/PowerToys-Run-PerplexitySearchShortcut/actions/workflows/build-create-release.yml)
 
 A [PowerToys Run](https://aka.ms/PowerToysOverview#powertoys-run) plugin that enables quick searching using [Perplexity AI](https://perplexity.ai/).
 
@@ -41,7 +41,7 @@ ptr add PerplexitySearchShortcut 0x6f677548/PowerToys-Run-PerplexitySearchShortc
 
 ### Manual Installation
 
-1. Download the latest release from the [Releases page](https://github.com/0x6f677548/PowerToys-Run-PerplexitySearchShortcut/releases)
+1. Download the latest release from the [Releases page](https://go.hugobatista.com/gh/PowerToys-Run-PerplexitySearchShortcut/releases)
 2. Extract the archive to `%LOCALAPPDATA%\Microsoft\PowerToys\PowerToys Run\Plugins`
 3. Restart PowerToys Run
 
