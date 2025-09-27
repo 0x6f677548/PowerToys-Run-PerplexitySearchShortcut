@@ -139,8 +139,21 @@ if (-not $buildOutputDir) {
 
 # Step 2: Create the plugin directory if it doesn't exist
 Write-Host "Creating plugin directory: $powerToysPluginDir" -ForegroundColor Cyan
-New-Item -Path $powerToysPluginDir -ItemType Directory -Force | Out-Null
-New-Item -Path "$powerToysPluginDir\Images" -ItemType Directory -Force | Out-Null
+try {
+    New-Item -Path $powerToysPluginDir -ItemType Directory -Force | Out-Null
+    Write-Host "Created plugin directory successfully" -ForegroundColor Green
+}
+catch {
+    Write-Host "Warning: Could not create plugin directory: $_" -ForegroundColor Yellow
+}
+
+try {
+    New-Item -Path "$powerToysPluginDir\Images" -ItemType Directory -Force | Out-Null
+    Write-Host "Created Images directory successfully" -ForegroundColor Green
+}
+catch {
+    Write-Host "Warning: Could not create Images directory: $_" -ForegroundColor Yellow
+}
 
 # Step 3: Copy files to the PowerToys Run plugins directory
 Write-Host "Copying plugin files..." -ForegroundColor Cyan
@@ -216,12 +229,26 @@ if (-not (Test-Path "$powerToysPluginDir\Images")) {
     New-Item -Path "$powerToysPluginDir\Images" -ItemType Directory -Force | Out-Null
 }
 
-try {
-    Copy-Item "$buildOutputDir\Images\*" "$powerToysPluginDir\Images\" -Force
-    Write-Host "Copied image files" -ForegroundColor Green
-}
-catch {
-    Write-Host "Warning: Could not copy image files. You may need to stop PowerToys first." -ForegroundColor Yellow
+# Check if source Images directory exists before copying
+if (Test-Path "$buildOutputDir\Images") {
+    try {
+        Copy-Item "$buildOutputDir\Images\*" "$powerToysPluginDir\Images\" -Force
+        Write-Host "Copied image files from build output" -ForegroundColor Green
+    }
+    catch {
+        Write-Host "Warning: Could not copy image files. You may need to stop PowerToys first." -ForegroundColor Yellow
+    }
+} elseif (Test-Path "$projectDir\images") {
+    # Fall back to project images directory
+    try {
+        Copy-Item "$projectDir\images\*" "$powerToysPluginDir\Images\" -Force
+        Write-Host "Copied image files from project directory" -ForegroundColor Green
+    }
+    catch {
+        Write-Host "Warning: Could not copy image files from project directory. You may need to stop PowerToys first." -ForegroundColor Yellow
+    }
+} else {
+    Write-Host "Warning: No Images directory found in build output ($buildOutputDir\Images) or project directory ($projectDir\images)" -ForegroundColor Yellow
 }
 
 # After copying image files, verify they're valid
