@@ -14,6 +14,7 @@ public class Main : IPlugin, IPluginI18n
 {
     private PluginInitContext? _context;
     private string _iconPath = "Images\\pluginicon.dark.png"; // Default path
+    private string _actionKeyword = ":p"; // Default value
     private const string PerplexitySearchUrl = "https://www.perplexity.ai/?q={0}";
     
     public string Name => "Perplexity Search";
@@ -25,11 +26,11 @@ public class Main : IPlugin, IPluginI18n
     public void Init(PluginInitContext context)
     {
         _context = context;
-        
+
         // PowerToys recent versions use IcoPathDark/IcoPathLight properties
         var metadata = context.CurrentPluginMetadata;
-        
-        try 
+
+        try
         {
             // Try to access icon properties through reflection
             var props = metadata.GetType().GetProperties();
@@ -44,12 +45,22 @@ public class Main : IPlugin, IPluginI18n
                         break;
                     }
                 }
+                else if (prop.Name.Contains("ActionKeyword") && prop.PropertyType == typeof(string))
+                {
+                    var value = prop.GetValue(metadata) as string;
+                    if (!string.IsNullOrEmpty(value))
+                    {
+                        _actionKeyword = value;
+                        break;
+                    }
+                }
             }
         }
         catch
         {
-            // If reflection fails, just use the default icon path
+            // If reflection fails, just use the default values
             _iconPath = "Images\\pluginicon.dark.png";
+            _actionKeyword = ":p";
         }
     }
 
@@ -57,7 +68,7 @@ public class Main : IPlugin, IPluginI18n
     {
         var results = new List<Result>();
         
-        if (!query.ActionKeyword.Equals(":p", StringComparison.OrdinalIgnoreCase))
+        if (!query.ActionKeyword.Equals(_actionKeyword, StringComparison.OrdinalIgnoreCase))
         {
             // Remove the check for global plugins since it's not available
             return results;
