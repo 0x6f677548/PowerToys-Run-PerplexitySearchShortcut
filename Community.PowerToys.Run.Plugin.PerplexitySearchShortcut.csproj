@@ -6,7 +6,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Community.PowerToys.Run.Plugin.PerplexitySearchShortcut</RootNamespace>
     <AssemblyName>Community.PowerToys.Run.Plugin.PerplexitySearchShortcut</AssemblyName>
-    <Version>1.0.0</Version>
+    <Version>0.1.0</Version>
     <UseWPF>true</UseWPF>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
